@@ -1,0 +1,65 @@
+﻿@model GreenhouseMonitoring.Models.NormativeParameter
+@{
+    ViewData["Title"] = "Редактировать норматив";
+}
+
+<h2>Редактировать норматив</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.ParameterId)
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="CropId" class="form-label">Культура</label>
+                        <select asp-for="CropId" class="form-select" asp-items="ViewBag.Crops"></select>
+                        <span asp-validation-for="CropId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Parameter" class="form-label">Параметр</label>
+                        <input asp-for="Parameter" class="form-control" />
+                        <span asp-validation-for="Parameter" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="MinValue" class="form-label">Мин. значение</label>
+                                <input asp-for="MinValue" class="form-control" step="0.01" />
+                                <span asp-validation-for="MinValue" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="MaxValue" class="form-label">Макс. значение</label>
+                                <input asp-for="MaxValue" class="form-control" step="0.01" />
+                                <span asp-validation-for="MaxValue" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="GrowthStage" class="form-label">Стадия роста</label>
+                        <input asp-for="GrowthStage" class="form-control" />
+                        <span asp-validation-for="GrowthStage" class="text-danger"></span>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

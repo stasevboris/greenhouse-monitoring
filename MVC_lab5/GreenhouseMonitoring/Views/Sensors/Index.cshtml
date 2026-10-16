@@ -1,0 +1,92 @@
+﻿@model IEnumerable<GreenhouseMonitoring.ViewModels.SensorViewModel>
+@{
+    ViewData["Title"] = "Датчики";
+}
+
+<h2>Датчики в теплицах</h2>
+
+<!-- Уведомления -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Кнопка добавления — только для админа -->
+@if (User.IsInRole("Administrator"))
+{
+    <a asp-action="Create" class="btn btn-success mb-3">
+        + Добавить датчик
+    </a>
+}
+else
+{
+    <div class="mb-3"></div> <!-- отступ, чтобы таблица не "прыгала" -->
+}
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Тип</th>
+            <th>Модель</th>
+            <th>Теплица</th>
+            <th>Положение</th>
+            <th>Создан</th>
+            <th>Показаний</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.SensorId</td>
+                <td>
+                    <span class="badge bg-primary">@s.Type</span>
+                </td>
+                <td>@(s.Model ?? "—")</td>
+                <td>
+                    <strong>@s.GreenhouseDisplay</strong>
+                </td>
+                <td>@(s.LocationInGh ?? "—")</td>
+                <td>@s.CreatedAt?.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <span class="badge bg-info rounded-pill">@s.ReadingsCount</span>
+                </td>
+                <td>
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Edit"
+                               asp-route-id="@s.SensorId"
+                               class="btn btn-outline-warning"
+                               title="Редактировать">
+                                Edit
+                            </a>
+                            <a asp-action="Delete"
+                               asp-route-id="@s.SensorId"
+                               class="btn btn-outline-danger"
+                               title="Удалить">
+                                Delete
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <em class="text-muted small">Только администратору</em>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

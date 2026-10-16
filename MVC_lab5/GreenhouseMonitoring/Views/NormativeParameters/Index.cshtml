@@ -1,0 +1,105 @@
+﻿@model IEnumerable<GreenhouseMonitoring.Models.NormativeParameter>
+@using GreenhouseMonitoring.ViewModels
+@{
+    ViewData["Title"] = "Нормативные параметры";
+    var filter = ViewBag.CurrentFilter as NormativeFilter ?? new NormativeFilter();
+    var currentCropId = filter.CropId ?? 0;
+}
+
+<h2>Нормативные параметры по культурам</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        @if (User.IsInRole("Administrator"))
+        {
+            <a asp-action="Create" class="btn btn-success">
+                + Добавить норматив
+            </a>
+        }
+    </div>
+    <div class="col-md-6 text-end">
+        <form asp-action="Index" method="get" class="d-inline">
+            <div class="input-group">
+                <span class="input-group-text">Фильтр:</span>
+                <select name="cropId" class="form-select" asp-items="ViewBag.Crops" onchange="this.form.submit()">
+                    <option value="">— Все культуры —</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Нормативов пока нет.
+        @if (User.IsInRole("Administrator"))
+        {
+            <text> <a asp-action="Create">Добавить первый</a></text>
+        }
+    </div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Культура</th>
+                <th>Параметр</th>
+                <th>Мин.</th>
+                <th>Макс.</th>
+                <th>Стадия роста</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var np in Model)
+            {
+                <tr>
+                    <td><strong>@(np.Crop?.Name ?? "—")</strong></td>
+                    <td><span class="badge bg-secondary">@np.Parameter</span></td>
+                    <td class="text-danger fw-bold">@np.MinValue</td>
+                    <td class="text-success fw-bold">@np.MaxValue</td>
+                    <td><em>@(np.GrowthStage ?? "—")</em></td>
+                    <td>
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-action="Edit" asp-route-id="@np.ParameterId" class="btn btn-outline-warning">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@np.ParameterId" class="btn btn-outline-danger">Delete</a>
+                            </div>
+                        }
+                        else
+                        {
+                            <em class="text-muted small">Только администратору</em>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const select = document.querySelector("select[name='cropId']");
+        if (select && @currentCropId > 0) {
+            select.value = "@currentCropId";
+        }
+    });
+</script>

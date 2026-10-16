@@ -1,0 +1,185 @@
+﻿@model PageViewModel<GreenhouseMonitoring.Models.Action>
+@{
+    ViewData["Title"] = "Действия";
+
+    // Берём фильтр из ViewBag.CurrentFilter (который мы устанавливаем в контроллере)
+    var filter = ViewBag.CurrentFilter as GreenhouseMonitoring.ViewModels.ActionsFilter
+                 ?? new GreenhouseMonitoring.ViewModels.ActionsFilter();
+    var currentStatus = filter.Status;
+    var currentPage = filter.Page;
+}
+
+<h2>Действия</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <a asp-action="Create"
+           asp-route-status="@currentStatus"
+           class="btn btn-success">
+            + Добавить действие
+        </a>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group" role="group">
+            <a asp-action="Index"
+               asp-route-status=""
+               asp-route-page="1"
+               class="btn @(string.IsNullOrEmpty(currentStatus) ? "btn-primary" : "btn-outline-primary")">
+                Все
+            </a>
+            <a asp-action="Index"
+               asp-route-status="Planned"
+               asp-route-page="1"
+               class="btn @(currentStatus == "Planned" ? "btn-warning" : "btn-outline-warning")">
+                Запланировано
+            </a>
+            <a asp-action="Index"
+               asp-route-status="InProgress"
+               asp-route-page="1"
+               class="btn @(currentStatus == "InProgress" ? "btn-info" : "btn-outline-info")">
+                В работе
+            </a>
+            <a asp-action="Index"
+               asp-route-status="Completed"
+               asp-route-page="1"
+               class="btn @(currentStatus == "Completed" ? "btn-success" : "btn-outline-success")">
+                Выполнено
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Items.Any())
+{
+    <div class="alert alert-info">
+        Действий пока нет. <a asp-action="Create">Создать первое</a>
+    </div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Время</th>
+                <th>Тип</th>
+                <th>Описание</th>
+                <th>Статус</th>
+                <th>Событие</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Items)
+            {
+                var rowClass = a.Status switch
+                {
+                    "Planned" => "table-warning",
+                    "InProgress" => "table-info",
+                    "Completed" => "table-success",
+                    "Cancelled" => "table-secondary",
+                    _ => ""
+                };
+                var badgeClass = a.Status switch
+                {
+                    "Planned" => "bg-warning",
+                    "InProgress" => "bg-info",
+                    "Completed" => "bg-success",
+                    "Cancelled" => "bg-secondary",
+                    _ => "bg-primary"
+                };
+                <tr class="@rowClass">
+                    <td>@a.Timestamp.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td><strong>@a.Type</strong></td>
+                    <td>@a.Description</td>
+                    <td>
+                        <span class="badge @badgeClass text-dark">@GetStatusDisplayName(a.Status)</span>
+                    </td>
+                    <td>
+                        @if (a.Event != null)
+                        {
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@a.Event.EventId" class="text-decoration-none">
+                                #@(a.Event.EventId) @(a.Event.Criticality)
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-action="Edit" asp-route-id="@a.ActionId" class="btn btn-outline-warning" title="Редактировать">
+                                    Edit
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@a.ActionId" class="btn btn-outline-danger" title="Удалить">
+                                    Delete
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <em class="text-muted small">Доступно только администратору</em>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Пагинация с сохранением текущего фильтра -->
+    <nav aria-label="Навигация по страницам">
+        <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(Model.PageNumber - 1)"
+                       asp-route-status="@currentStatus">
+                        Previous
+                    </a>
+                </li>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-status="@currentStatus">
+                        @i
+                    </a>
+                </li>
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(Model.PageNumber + 1)"
+                       asp-route-status="@currentStatus">
+                        Next
+                    </a>
+                </li>
+            }
+        </ul>
+        <div class="text-center text-muted small">
+            Страница @Model.PageNumber из @Model.TotalPages (@Model.TotalItems действий)
+        </div>
+    </nav>
+}
+
+@functions {
+    string GetStatusDisplayName(string status) => status switch
+    {
+        "Planned" => "Запланировано",
+        "InProgress" => "В работе",
+        "Completed" => "Выполнено",
+        "Cancelled" => "Отменено",
+        _ => status
+    };
+}

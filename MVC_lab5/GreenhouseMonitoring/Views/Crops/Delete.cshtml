@@ -1,0 +1,42 @@
+﻿@model GreenhouseMonitoring.Models.Crop
+@{
+    ViewData["Title"] = "Удалить культуру";
+}
+
+<h2>Удалить культуру?</h2>
+
+<div class="alert alert-danger">
+    <strong>Внимание!</strong> Вы уверены, что хотите удалить культуру <strong>"@Model.Name"</strong>?
+    @if (Model.Greenhouses.Any())
+    {
+        <br>
+    
+        <strong>Удаление невозможно — есть связанные теплицы.</strong>
+    }
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">ID</dt>
+    <dd class="col-sm-9">@Model.CropId</dd>
+
+    <dt class="col-sm-3">Название</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Теплиц</dt>
+    <dd class="col-sm-9">@Model.Greenhouses.Count</dd>
+
+    <dt class="col-sm-3">Нормативов</dt>
+    <dd class="col-sm-9">@Model.NormativeParameters.Count</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.CropId" />
+
+    <button type="submit"
+            class="btn btn-danger"
+            @(Model.Greenhouses.Any() ? "disabled title=\"Нельзя удалить: есть связанные теплицы\"" : "")>
+        Удалить
+    </button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Отмена</a>
+</form>

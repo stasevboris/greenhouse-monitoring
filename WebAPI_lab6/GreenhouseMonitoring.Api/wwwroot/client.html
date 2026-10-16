@@ -1,0 +1,365 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление теплицами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e8f4fc;
+        }
+
+        .form-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+
+        input, select, button {
+            margin: 8px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            width: auto;
+            padding: 10px 20px;
+        }
+
+            button:hover {
+                background: #2980b9;
+            }
+
+            button.delete {
+                background: #e74c3c;
+            }
+
+                button.delete:hover {
+                    background: #c0392b;
+                }
+
+            button.cancel {
+                background: #95a5a6;
+            }
+
+                button.cancel:hover {
+                    background: #7f8c8d;
+                }
+
+        .button-group {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌿 Управление теплицами</h1>
+
+    <button onclick="showCreateForm()">➕ Добавить теплицу</button>
+
+    <div id="formContainer" class="form-container" style="display:none">
+        <h2 id="formTitle">Новая теплица</h2>
+        <input type="hidden" id="greenhouseId">
+
+        <div class="form-group">
+            <label>Номер/Название:</label>
+            <input type="text" id="nameNumber" required placeholder="Например: GH-001">
+        </div>
+
+        <div class="form-group">
+            <label>Расположение:</label>
+            <input type="text" id="location" required placeholder="Например: Северная зона, Сектор A">
+        </div>
+
+        <div class="form-group">
+            <label>Культура:</label>
+            <select id="cropId" required>
+                <option value="">Выберите культуру...</option>
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button onclick="saveGreenhouse()">💾 Сохранить</button>
+            <button class="cancel" onclick="hideForm()">❌ Отмена</button>
+        </div>
+    </div>
+
+    <table id="greenhousesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Номер</th>
+                <th>Расположение</th>
+                <th>Культура</th>
+                <th>Создано</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Данные будут загружены через JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        const apiBaseUrl = 'https://localhost:7272'; // ← Убедитесь, что этот URL правильный
+        const apiUrl = `${apiBaseUrl}/api/greenhouses`;
+
+        async function loadGreenhouses() {
+            try {
+                console.log('Загрузка теплиц...');
+                const res = await fetch(apiUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const data = await res.json();
+                console.log('Полученные данные:', data);
+
+                const tbody = document.querySelector('#greenhousesTable tbody');
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Нет данных о теплицах</td></tr>';
+                    return;
+                }
+
+                data.forEach(g => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                            <td>${g.greenhouseId || g.id || ''}</td>
+                            <td>${g.nameNumber || g.name || ''}</td>
+                            <td>${g.location || ''}</td>
+                            <td>${g.crop?.name || g.cropName || '—'}</td>
+                            <td>${g.createdAt ? new Date(g.createdAt).toLocaleDateString('ru-RU') : '—'}</td>
+                            <td class="actions">
+                                <button onclick="editGreenhouse(${g.greenhouseId || g.id})">✏️ Изменить</button>
+                                <button class="delete" onclick="deleteGreenhouse(${g.greenhouseId || g.id})">🗑️ Удалить</button>
+                            </td>
+                        `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки теплиц:', error);
+                const tbody = document.querySelector('#greenhousesTable tbody');
+                tbody.innerHTML = `<tr><td colspan="6" style="color: red; text-align: center;">
+                        Ошибка загрузки: ${error.message}<br>
+                        Проверьте подключение к API (${apiUrl})
+                    </td></tr>`;
+            }
+        }
+
+        async function loadCrops() {
+            try {
+                const res = await fetch(`${apiBaseUrl}/api/crops`);
+
+                if (!res.ok) {
+                    console.warn('Не удалось загрузить культуры, используем пустой список');
+                    return;
+                }
+
+                const crops = await res.json();
+                const select = document.getElementById('cropId');
+                select.innerHTML = '<option value="">Выберите культуру...</option>';
+
+                crops.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.cropId || c.id || '';
+                    option.textContent = c.name || '';
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки культур:', error);
+            }
+        }
+
+        function showCreateForm() {
+            document.getElementById('formTitle').textContent = '➕ Новая теплица';
+            document.getElementById('formContainer').style.display = 'block';
+            document.getElementById('greenhouseId').value = '';
+            document.getElementById('nameNumber').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('cropId').value = '';
+
+            // Фокус на первом поле
+            setTimeout(() => document.getElementById('nameNumber').focus(), 100);
+        }
+
+        function hideForm() {
+            document.getElementById('formContainer').style.display = 'none';
+        }
+
+        async function saveGreenhouse() {
+            try {
+                const id = document.getElementById('greenhouseId').value;
+                const cropId = document.getElementById('cropId').value;
+
+                // Проверка обязательных полей
+                const nameNumber = document.getElementById('nameNumber').value.trim();
+                const location = document.getElementById('location').value.trim();
+
+                if (!nameNumber || !location || !cropId) {
+                    alert('Пожалуйста, заполните все обязательные поля');
+                    return;
+                }
+
+                // Формируем объект для отправки
+                const greenhouseData = {
+                    nameNumber: nameNumber,
+                    location: location,
+                    cropId: parseInt(cropId)
+                };
+
+                // Если есть ID, добавляем его для обновления
+                if (id) {
+                    greenhouseData.greenhouseId = parseInt(id);
+                }
+
+                console.log('Отправка данных:', greenhouseData);
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${apiUrl}/${id}` : apiUrl;
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(greenhouseData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Ошибка сервера: ${response.status} - ${errorText}`);
+                }
+
+                hideForm();
+                await loadGreenhouses();
+                alert(id ? 'Теплица успешно обновлена!' : 'Теплица успешно создана!');
+
+            } catch (error) {
+                console.error('Ошибка сохранения теплицы:', error);
+                alert(`Ошибка сохранения: ${error.message}`);
+            }
+        }
+
+        async function editGreenhouse(id) {
+            try {
+                console.log(`Редактирование теплицы с ID: ${id}`);
+                const res = await fetch(`${apiUrl}/${id}`);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const greenhouse = await res.json();
+                console.log('Полученные данные для редактирования:', greenhouse);
+
+                document.getElementById('formTitle').textContent = '✏️ Редактировать теплицу';
+                document.getElementById('greenhouseId').value = greenhouse.greenhouseId || greenhouse.id || '';
+                document.getElementById('nameNumber').value = greenhouse.nameNumber || greenhouse.name || '';
+                document.getElementById('location').value = greenhouse.location || '';
+                document.getElementById('cropId').value = greenhouse.cropId || '';
+                document.getElementById('formContainer').style.display = 'block';
+
+            } catch (error) {
+                console.error('Ошибка загрузки данных для редактирования:', error);
+                alert(`Ошибка загрузки данных: ${error.message}`);
+            }
+        }
+
+        async function deleteGreenhouse(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту теплицу?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiUrl}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                await loadGreenhouses();
+                alert('Теплица успешно удалена!');
+
+            } catch (error) {
+                console.error('Ошибка удаления теплицы:', error);
+                alert(`Ошибка удаления: ${error.message}`);
+            }
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Страница загружена, начинаем инициализацию...');
+            loadGreenhouses();
+            loadCrops();
+        });
+    </script>
+</body>
+</html>

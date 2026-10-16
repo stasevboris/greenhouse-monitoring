@@ -1,0 +1,13 @@
+﻿@model GreenhouseMonitoring.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Ошибка";
+}
+
+<div class="alert alert-danger">
+    <h2>⚠️ Произошла ошибка</h2>
+    <p>Пожалуйста, попробуйте позже или обратитесь к администратору.</p>
+    @if (Model?.RequestId != null)
+    {
+        <p><small>ID запроса: @Model.RequestId</small></p>
+    }
+</div>

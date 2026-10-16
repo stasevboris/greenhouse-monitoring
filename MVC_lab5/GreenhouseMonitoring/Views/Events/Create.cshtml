@@ -1,0 +1,96 @@
+﻿@model GreenhouseMonitoring.Models.Event
+@{
+    ViewData["Title"] = "Создать событие";
+}
+
+<h2>Новое событие</h2>
+
+<!-- Отладка ошибок -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <strong>Ошибки валидации:</strong>
+        <ul>
+            @foreach (var key in ViewData.ModelState.Keys)
+            {
+                var errors = ViewData.ModelState[key]?.Errors;
+                if (errors != null && errors.Count > 0)
+                {
+                    <li><strong>@key</strong>: @string.Join(", ", errors.Select(e => e.ErrorMessage))</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Датчик</label>
+                        <select name="SensorId" class="form-select" required>
+                            <option value="">— Выберите датчик —</option>
+                            @if (ViewBag.Sensors != null)
+                            {
+                                @foreach (var sensor in ViewBag.Sensors as IEnumerable<SelectListItem>)
+                                {
+                                    <option value="@sensor.Value">@sensor.Text</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="SensorId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">ID показания</label>
+                        <input name="ReadingId" class="form-control" type="number" min="1" placeholder="Введите ID показания датчика" required />
+                        <span asp-validation-for="ReadingId" class="text-danger"></span>
+                        <div class="form-text">
+                            Укажите ID существующего показания из таблицы SensorReadings
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" class="form-control" rows="3" maxlength="255" placeholder="Описание события" required></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Критичность</label>
+                        <select name="Criticality" class="form-select" required>
+                            <option value="">— Выберите критичность —</option>
+                            <option value="low">Низкая</option>
+                            <option value="medium">Средняя</option>
+                            <option value="high">Высокая</option>
+                        </select>
+                        <span asp-validation-for="Criticality" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Время создания</label>
+                        <input class="form-control" value="@DateTime.Now.ToString("g")" disabled />
+                        <div class="form-text">
+                            Время события будет установлено автоматически как текущее
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Создать событие</button>
+                        <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,38 @@
+﻿@model GreenhouseMonitoring.Models.Sensor
+@{
+    ViewData["Title"] = "Удалить датчик";
+}
+
+<h2>Удалить датчик?</h2>
+
+<div class="alert alert-@(Model.SensorReadings.Any() ? "warning" : "danger")">
+    <strong>Внимание!</strong> Вы уверены, что хотите удалить датчик <strong>@Model.Type (@Model.Model)</strong>?
+    @if (Model.SensorReadings.Any())
+    {
+        <br>
+    
+        <strong>Удаление невозможно — есть @Model.SensorReadings.Count показаний</strong>
+    }
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Тип</dt>
+    <dd class="col-sm-9">@Model.Type</dd>
+    <dt class="col-sm-3">Модель</dt>
+    <dd class="col-sm-9">@(Model.Model ?? "—")</dd>
+    <dt class="col-sm-3">Теплица</dt>
+    <dd class="col-sm-9">@(Model.Greenhouse?.NameNumber ?? "—")</dd>
+    <dt class="col-sm-3">Положение</dt>
+    <dd class="col-sm-9">@(Model.LocationInGh ?? "—")</dd>
+    <dt class="col-sm-3">Показаний</dt>
+    <dd class="col-sm-9">@Model.SensorReadings.Count</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.SensorId" />
+    <button type="submit" class="btn btn-danger" @(Model.SensorReadings.Any() ? "disabled" : "")>
+        Удалить
+    </button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Отмена</a>
+</form>

@@ -1,0 +1,28 @@
+﻿@model GreenhouseMonitoring.Models.NormativeParameter
+@{
+    ViewData["Title"] = "Удалить норматив";
+}
+
+<h2>Удалить норматив?</h2>
+
+<div class="alert alert-danger">
+    Вы уверены, что хотите удалить этот норматив?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Культура</dt>
+    <dd class="col-sm-9">@Model.Crop?.Name</dd>
+    <dt class="col-sm-3">Параметр</dt>
+    <dd class="col-sm-9">@Model.Parameter</dd>
+    <dt class="col-sm-3">Диапазон</dt>
+    <dd class="col-sm-9">@Model.MinValue — @Model.MaxValue</dd>
+    <dt class="col-sm-3">Стадия роста</dt>
+    <dd class="col-sm-9">@(Model.GrowthStage ?? "—")</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.ParameterId" />
+    <button type="submit" class="btn btn-danger">Удалить</button>
+    <a asp-action="Index" asp-route-cropId="@Model.CropId" class="btn btn-secondary ms-2">Отмена</a>
+</form>

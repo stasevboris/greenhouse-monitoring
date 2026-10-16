@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "График показаний";
+}
+<h2 class="mb-4">
+    График: <strong>@ViewBag.Sensor.Type</strong>
+    <small class="text-muted">— @ViewBag.Sensor.Greenhouse?.NameNumber (@ViewBag.Sensor.Model)</small>
+</h2>
+
+<div class="mb-4">
+    <button id="buildBtn" class="btn btn-success">Построить график</button>
+    <span id="status" class="ms-3 text-muted small"></span>
+</div>
+
+<!-- ВАЖНО: height на canvas, а не на div! -->
+<div id="chartContainer" style="display: none; position: relative; height: 500px;">
+    <canvas id="sensorChart"></canvas>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Index" asp-route-sensorId="@ViewBag.Sensor.SensorId" class="btn btn-secondary">
+        ← Назад к показаниям
+    </a>
+</div>
+
+<style>
+    #chartContainer canvas {
+        height: 100% !important;
+        width: 100% !important;
+    }
+</style>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const apiUrl = '@Url.Action("GetReadingsData", "SensorReadings")';
+        const sensorId = @ViewBag.Sensor.SensorId;
+        let chart = null;
+        let autoUpdateInterval = null;
+        async function loadAndRenderChart() {
+            try {
+                document.getElementById('status').textContent = 'Загрузка данных...';
+                const response = await fetch(`${apiUrl}?sensorId=${sensorId}&_=${Date.now()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const result = await response.json();
+                if (!result.labels || result.labels.length === 0) {
+                    document.getElementById('status').textContent = 'Нет данных для отображения';
+                    return;
+                }
+                const ctx = document.getElementById('sensorChart').getContext('2d');
+                if (chart) {
+                    chart.data.labels = result.labels;
+                    chart.data.datasets[0].data = result.data;
+                    chart.update('quiet');
+                } else {
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: result.labels,
+                            datasets: [{
+                                label: "@ViewBag.Sensor.Type",
+                                data: result.data,
+                                borderColor: '#198754',
+                                backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                pointHoverRadius: 7,
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: { duration: 0 },
+                            plugins: {
+                                legend: { position: 'top' },
+                                tooltip: { mode: 'index', intersect: false }
+                            },
+                            scales: {
+                                x: { ticks: { maxTicksLimit: 15 } },
+                                y: { beginAtZero: false }
+                            }
+                        }
+                    });
+                }
+                document.getElementById('status').textContent = `Обновлено: ${new Date().toLocaleTimeString()}`;
+                document.getElementById('chartContainer').style.display = 'block';
+            } catch (err) {
+                document.getElementById('status').textContent = 'Ошибка загрузки: ' + err.message;
+                console.error(err);
+            }
+        }
+        function startAutoUpdate() {
+            if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+            autoUpdateInterval = setInterval(async () => {
+                await loadAndRenderChart();
+            }, 20000);
+        }
+        document.getElementById('buildBtn').addEventListener('click', async () => {
+            await loadAndRenderChart();
+            document.getElementById('buildBtn').disabled = true;
+            startAutoUpdate();
+        });
+        const updateBtn = document.getElementById('updateBtn');
+        if (updateBtn) {
+            updateBtn.addEventListener('click', loadAndRenderChart);
+        }
+        window.addEventListener('beforeunload', () => {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+            }
+        });
+    </script>
+}

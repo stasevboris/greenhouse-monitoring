@@ -1,0 +1,28 @@
+﻿@model GreenhouseMonitoring.Models.Action
+@{
+    ViewData["Title"] = "Удалить действие";
+}
+
+<h2>Удалить действие</h2>
+
+<div class="alert alert-danger">
+    <h4>Вы уверены, что хотите удалить это действие?</h4>
+    <p><strong>Тип:</strong> @Model.Type</p>
+    <p><strong>Описание:</strong> @Model.Description</p>
+    <p><strong>Статус:</strong> @Model.Status</p>
+    <p><strong>Время:</strong> @Model.Timestamp.ToString("g")</p>
+    @if (Model.Event != null)
+    {
+        <p><strong>Связанное событие:</strong> #@Model.Event.EventId (@Model.Event.Criticality)</p>
+    }
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ActionId" />
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-danger">Да, удалить</button>
+        <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>

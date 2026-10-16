@@ -1,0 +1,86 @@
+﻿@model GreenhouseMonitoring.Models.Action
+@{
+    ViewData["Title"] = "Создать действие";
+}
+
+<h2>Новое действие</h2>
+
+<!-- Отладка: показ ошибок -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <strong>Ошибки валидации:</strong>
+        <ul>
+            @foreach (var key in ViewData.ModelState.Keys)
+            {
+                var errors = ViewData.ModelState[key]?.Errors;
+                if (errors != null && errors.Count > 0)
+                {
+                    <li><strong>@key</strong>: @string.Join(", ", errors.Select(e => e.ErrorMessage))</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Событие</label>
+                        <select name="EventId" class="form-select">
+                            <option value="">— Выберите событие —</option>
+                            @foreach (var item in ViewBag.Events as IEnumerable<SelectListItem>)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Тип действия</label>
+                        <select name="Type" class="form-select" required>
+                            <option value="">— Выберите тип —</option>
+                            <option value="watering">Полив</option>
+                            <option value="ventilation">Вентиляция</option>
+                            <option value="fertilizing">Удобрение</option>
+                            <option value="inspection">Проверка</option>
+                            <option value="heating">Обогрев</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="Description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Статус</label>
+                        <select name="Status" class="form-select">
+                            <option value="Planned">Запланировано</option>
+                            <option value="InProgress">В работе</option>
+                            <option value="Completed">Выполнено</option>
+                            <option value="Cancelled">Отменено</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Создать действие</button>
+                        <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

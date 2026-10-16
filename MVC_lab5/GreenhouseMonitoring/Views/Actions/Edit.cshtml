@@ -1,0 +1,92 @@
+﻿@model GreenhouseMonitoring.Models.Action
+
+@{
+    ViewData["Title"] = "Редактировать действие";
+}
+
+<h2>Редактировать действие</h2>
+
+<!-- Блок с ошибками валидации (очень полезен при отладке) -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <strong>Ошибки валидации:</strong>
+        <ul class="mb-0">
+            @foreach (var key in ViewData.ModelState.Keys.Where(k => ViewData.ModelState[k]!.Errors.Count > 0))
+            {
+                <li><strong>@key</strong>: @string.Join(", ", ViewData.ModelState[key]!.Errors.Select(e => e.ErrorMessage))</li>
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- ГЛАВНОЕ ИСПРАВЛЕНИЕ: используем Html.HiddenFor, а не asp-for -->
+    @Html.HiddenFor(m => m.ActionId)
+    @Html.HiddenFor(m => m.Timestamp)
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+
+                    <!-- Событие -->
+                    <div class="mb-3">
+                        <label class="form-label">Событие</label>
+                        <select asp-for="EventId" class="form-select" asp-items="ViewBag.Events">
+                            <option value="">— Выберите событие —</option>
+                        </select>
+                        <span asp-validation-for="EventId" class="text-danger"></span>
+                    </div>
+
+                    <!-- Тип действия -->
+                    <div class="mb-3">
+                        <label asp-for="Type" class="form-label">Тип действия</label>
+                        <input asp-for="Type" class="form-control" placeholder="Например: Проверка, Полив, Вентиляция" />
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+
+                    <!-- Описание -->
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Описание</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <!-- Статус -->
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label">Статус</label>
+                        <select asp-for="Status" class="form-select">
+                            <option value="Planned">Запланировано</option>
+                            <option value="InProgress">В работе</option>
+                            <option value="Completed">Выполнено</option>
+                            <option value="Cancelled">Отменено</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <!-- Время создания (только для чтения) -->
+                    <div class="mb-3">
+                        <label class="form-label">Время создания</label>
+                        <input class="form-control" value="@Model.Timestamp.ToString("dd.MM.yyyy HH:mm:ss")" disabled />
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Отмена</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

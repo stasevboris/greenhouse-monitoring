@@ -1,0 +1,48 @@
+﻿@model GreenhouseMonitoring.Models.SensorReading
+@{
+    ViewData["Title"] = "Редактировать показание";
+}
+
+<h2>Редактировать показание</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.ReadingId)
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="SensorId" class="form-label">Датчик</label>
+                        <select asp-for="SensorId" class="form-select" asp-items="ViewBag.Sensors"></select>
+                        <span asp-validation-for="SensorId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Value" class="form-label">Значение</label>
+                        <input asp-for="Value" class="form-control" step="0.01" />
+                        <span asp-validation-for="Value" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Timestamp" class="form-label">Время</label>
+                        <input asp-for="Timestamp" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="Timestamp" class="text-danger"></span>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

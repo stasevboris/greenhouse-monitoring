@@ -1,0 +1,28 @@
+﻿@model GreenhouseMonitoring.Models.SensorReading
+@{
+    ViewData["Title"] = "Удалить показание";
+}
+
+<h2>Удалить показание?</h2>
+
+<div class="alert alert-danger">
+    Вы уверены, что хотите удалить это показание?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Время</dt>
+    <dd class="col-sm-9">@Model.Timestamp:ToString("dd.MM.yyyy HH:mm:ss")</dd>
+    <dt class="col-sm-3">Датчик</dt>
+    <dd class="col-sm-9">@Model.Sensor?.Type (@Model.Sensor?.Model)</dd>
+    <dt class="col-sm-3">Значение</dt>
+    <dd class="col-sm-9"><strong>@Model.Value</strong></dd>
+    <dt class="col-sm-3">Теплица</dt>
+    <dd class="col-sm-9">@Model.Sensor?.Greenhouse?.NameNumber</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.ReadingId" />
+    <button type="submit" class="btn btn-danger">Удалить</button>
+    <a asp-action="Index" asp-route-sensorId="@Model.SensorId" class="btn btn-secondary ms-2">Отмена</a>
+</form>

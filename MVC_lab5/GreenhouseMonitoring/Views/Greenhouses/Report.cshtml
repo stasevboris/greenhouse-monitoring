@@ -1,0 +1,37 @@
+﻿@model Dictionary<string, double>
+@{
+    ViewData["Title"] = "Отчет по эффективности";
+}
+<h2>Отчет по эффективности: @ViewBag.Greenhouse.NameNumber</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">Нет данных для анализа</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Параметр</th>
+                <th>В норме</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Key</td>
+                    <td>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" style="width: @item.Value%"></div>
+                        </div>
+                        <small>@item.Value%</small>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-action="Index" class="btn btn-secondary">← Назад к теплицам</a>

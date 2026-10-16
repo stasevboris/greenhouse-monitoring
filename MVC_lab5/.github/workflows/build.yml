@@ -1,0 +1,58 @@
+name: .NET
+
+on:
+  push:
+    branches: [ lab5 ]
+  pull_request:
+    branches: [ lab5 ]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '**.csproj.user'
+
+env:
+  DOTNET_VERSION: '8.0'
+
+jobs:
+  build-and-test:
+    name: Build & Test - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --no-build --configuration Release
+          --logger "trx;LogFileName=TestResults.trx"
+          --collect:"XPlat Code Coverage"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: |
+            "**/TestResults/*.trx"
+            "**/coverage.cobertura.xml"
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          files: "**/coverage.cobertura.xml"

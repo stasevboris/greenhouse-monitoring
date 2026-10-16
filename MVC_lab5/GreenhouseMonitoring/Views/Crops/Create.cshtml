@@ -1,0 +1,32 @@
+﻿@model GreenhouseMonitoring.Models.Crop
+@{
+    ViewData["Title"] = "Создать культуру";
+}
+<h2>Новая культура</h2>
+
+<form asp-action="Create">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Название культуры</label>
+                        <input asp-for="Name" class="form-control" placeholder="Например: Томаты, Огурцы, Перец" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Создать</button>
+                        <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

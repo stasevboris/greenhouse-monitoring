@@ -1,0 +1,39 @@
+﻿@model GreenhouseMonitoring.Models.Event
+@{
+    ViewData["Title"] = "Удалить событие";
+}
+
+<h2>Удалить событие?</h2>
+
+<div class="alert alert-@(Model.Actions.Any() ? "warning" : "danger")">
+    <strong>Вы уверены, что хотите удалить это событие?</strong>
+    @if (Model.Actions.Any())
+    {
+        <br>
+    
+        <strong>Удаление невозможно — есть связанные действия (@Model.Actions.Count шт.)</strong>
+    }
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Время</dt>
+    <dd class="col-sm-9">@Model.Timestamp.ToString("g")</dd>
+    <dt class="col-sm-3">Теплица</dt>
+    <dd class="col-sm-9">@Model.Sensor?.Greenhouse?.NameNumber</dd>
+    <dt class="col-sm-3">Датчик</dt>
+    <dd class="col-sm-9">@Model.Sensor?.Type</dd>
+    <dt class="col-sm-3">Описание</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+    <dt class="col-sm-3">Критичность</dt>
+    <dd class="col-sm-9">@(Model.Criticality == "high" ? "Высокая" : Model.Criticality == "medium" ? "Средняя" : "Низкая")</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.EventId" />
+    <button type="submit" class="btn btn-danger" @(Model.Actions.Any() ? "disabled" : "")>
+        Удалить
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+    </a>
+</form>

@@ -1,0 +1,49 @@
+﻿@model GreenhouseMonitoring.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Создать пользователя";
+}
+
+<h2 class="mb-4">Создать нового пользователя</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email (логин)</label>
+                        <input asp-for="Email" class="form-control" placeholder="user@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Пароль</label>
+                        <input asp-for="Password" class="form-control" type="password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <div class="form-text">Минимум 6 символов</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label">Роль</label>
+                        <select asp-for="Role" class="form-select" asp-items="ViewBag.Roles">
+                            <option value="">— Без роли —</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">Создать пользователя</button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

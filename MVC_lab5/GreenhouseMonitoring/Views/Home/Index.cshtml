@@ -1,0 +1,104 @@
+﻿@model GreenhouseMonitoring.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="text-center mb-4">
+    <h1>🌱 Панель управления теплицей</h1>
+    <p class="text-muted">Мониторинг состояния и оперативное реагирование</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-bg-primary">
+            <div class="card-body">
+                <h5>Теплиц</h5>
+                <h2 class="display-5">@Model.GreenhouseCount</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success">
+            <div class="card-body">
+                <h5>Датчиков</h5>
+                <h2 class="display-5">@Model.SensorCount</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning">
+            <div class="card-body">
+                <h5>Критичных событий</h5>
+                <h2 class="display-5">@Model.CriticalEvents</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-danger">
+            <div class="card-body">
+                <h5>Плановых действий</h5>
+                <h2 class="display-5">@Model.PlannedActions</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Последние события</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.LatestEvents.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var e in Model.LatestEvents)
+                        {
+                            <div class="list-group-item">
+                                <strong>@e.Timestamp.ToString("g")</strong><br />
+                                @e.Description<br />
+                                <small class="text-muted">
+                                    Теплица: @(e.Sensor?.Greenhouse?.NameNumber ?? "—") |
+                                    Критичность: <span class="badge bg-@(e.Criticality == "high" ? "danger" : e.Criticality == "medium" ? "warning" : "success")">@e.Criticality</span>
+                                </small>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Событий пока нет.</p>
+                }
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary mt-2">Все события</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Топ культур</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TopCrops.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var c in Model.TopCrops)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>@c.Name</span>
+                                <span class="badge bg-secondary">@c.Greenhouses.Count теплиц</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">Культуры не добавлены.</p>
+                }
+                <a asp-controller="Crops" asp-action="Index" class="btn btn-outline-primary mt-2">Все культуры</a>
+            </div>
+        </div>
+    </div>
+</div>
